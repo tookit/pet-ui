@@ -102,6 +102,7 @@ function QuickViewModal({
 
   const handleAdd = () => {
     addItem({
+      productId: detail?.id ?? 0,
       slug,
       name: detail?.name ?? productName,
       imageUrl:
@@ -301,6 +302,7 @@ export default function ProductCard({
       removeItem(slug);
     } else {
       addItem({
+        productId: product.id,
         slug,
         name: product.name,
         imageUrl: imageUrl ?? undefined,

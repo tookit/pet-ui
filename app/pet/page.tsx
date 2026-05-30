@@ -10,6 +10,8 @@ import {
   type CategoryTree,
 } from "@/lib/api";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Pet Products",
   description:
@@ -45,7 +47,7 @@ export default async function PetPage() {
   return (
     <>
       {/* Hero */}
-      <section className="pt-16 pb-14 bg-linear-to-br from-accent-100/40 to-neutral-0 text-center">
+      <section className="section-hero pt-16 pb-14 bg-linear-to-br from-accent-100/40 to-neutral-0 text-center">
         <div className="container-page">
           <div className="text-[11px] font-semibold tracking-[0.12em] uppercase text-primary-600 mb-3">
             Product Directory
@@ -94,7 +96,7 @@ export default async function PetPage() {
       </div>
 
       {/* Product grid */}
-      <section className="pb-20">
+      <section className="section-products pb-20">
         <div className="container-page">
           {products.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -122,7 +124,7 @@ export default async function PetPage() {
 
       {/* Subcategory links */}
       {subcategories.length > 0 && (
-        <section className="py-20 bg-neutral-50">
+        <section className="section-subcategories py-20 bg-neutral-50">
           <div className="container-page">
             <h2 className="font-display text-[clamp(20px,2.5vw,28px)] font-bold text-neutral-900 mb-8 tracking-[-0.02em]">
               Browse by Subcategory

@@ -51,7 +51,7 @@ export default function AboutPage() {
   return (
     <>
       {/* Hero */}
-      <section className="pt-20 pb-16 text-center bg-linear-to-br from-neutral-50 to-neutral-0">
+      <section className="section-hero pt-20 pb-16 text-center bg-linear-to-br from-neutral-50 to-neutral-0">
         <div className="container-page">
           <div className="text-[11px] font-semibold tracking-[0.12em] uppercase text-primary-600 mb-3">
             Our Story
@@ -67,7 +67,7 @@ export default function AboutPage() {
       </section>
 
       {/* Stats */}
-      <section className="pb-20 -mt-10">
+      <section className="section-stats pb-20 -mt-10">
         <div className="container-page">
           <div className="grid grid-cols-2 md:grid-cols-4 border border-neutral-200 rounded-lg overflow-hidden max-w-[900px] mx-auto">
             {stats.map((s) => (
@@ -86,7 +86,7 @@ export default function AboutPage() {
 
       {/* Timeline */}
       <FadeIn>
-        <section className="py-20 bg-neutral-50">
+        <section className="section-timeline py-20 bg-neutral-50">
           <div className="container-page max-w-[800px]">
             <div className="text-center mb-14">
               <div className="text-[11px] font-semibold tracking-[0.12em] uppercase text-primary-600 mb-3">
@@ -125,7 +125,7 @@ export default function AboutPage() {
 
       {/* Values */}
       <FadeIn>
-        <section className="py-20">
+        <section className="section-values py-20">
           <div className="container-page">
             <div className="text-center mb-14">
               <div className="text-[11px] font-semibold tracking-[0.12em] uppercase text-primary-600 mb-3">
@@ -160,7 +160,7 @@ export default function AboutPage() {
 
       {/* Factory gallery placeholder */}
       <FadeIn>
-        <section className="py-20 bg-neutral-50">
+        <section className="section-facility py-20 bg-neutral-50">
           <div className="container-page">
             <div className="text-center mb-14">
               <div className="text-[11px] font-semibold tracking-[0.12em] uppercase text-primary-600 mb-3">

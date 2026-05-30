@@ -51,7 +51,7 @@ export default function ContactPage() {
   return (
     <>
       {/* Hero */}
-      <section className="pt-20 pb-16 text-center bg-linear-to-br from-neutral-50 to-neutral-0">
+      <section className="section-hero pt-20 pb-16 text-center bg-linear-to-br from-neutral-50 to-neutral-0">
         <div className="container-page">
           <div className="text-[11px] font-semibold tracking-[0.12em] uppercase text-primary-600 mb-3">
             Get in Touch
@@ -68,7 +68,7 @@ export default function ContactPage() {
 
       {/* Form + Details */}
       <FadeIn>
-        <section className="py-20">
+        <section className="section-contact-form py-20">
           <div className="container-page">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
               {/* Contact form */}

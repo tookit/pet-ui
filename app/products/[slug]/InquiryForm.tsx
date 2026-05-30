@@ -6,12 +6,13 @@ import Button from "@/components/Button";
 import { useInquiry } from "@/lib/inquiry";
 
 interface InquiryFormProps {
+  productId: number;
   slug: string;
   name: string;
   moq?: number;
 }
 
-export function InquiryForm({ slug, name, moq }: InquiryFormProps) {
+export function InquiryForm({ productId, slug, name, moq }: InquiryFormProps) {
   const { items, addItem, removeItem } = useInquiry();
   const isInList = items.some((i) => i.slug === slug);
   const [added, setAdded] = useState(isInList);
@@ -21,7 +22,7 @@ export function InquiryForm({ slug, name, moq }: InquiryFormProps) {
       removeItem(slug);
       setAdded(false);
     } else {
-      addItem({ slug, name, moq: moq ?? 1 });
+      addItem({ productId, slug, name, moq: moq ?? 1 });
       setAdded(true);
       setTimeout(() => setAdded(false), 1500);
     }

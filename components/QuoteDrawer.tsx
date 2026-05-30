@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
   X,
   Trash,
@@ -8,8 +8,13 @@ import {
   Plus,
   Package,
   PaperPlaneTilt,
+  CheckCircle,
+  WarningCircle,
 } from "@phosphor-icons/react";
 import { useInquiry } from "@/lib/inquiry";
+import { submitInquiry } from "@/lib/api";
+
+type SubmitStatus = "idle" | "loading" | "success" | "error";
 
 export default function QuoteDrawer() {
   const {
@@ -22,6 +27,24 @@ export default function QuoteDrawer() {
     closeDrawer,
   } = useInquiry();
   const panelRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // ─── Form state ───
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [company, setCompany] = useState("");
+  const [phone, setPhone] = useState("");
+  const [notes, setNotes] = useState("");
+  const [status, setStatus] = useState<SubmitStatus>("idle");
+  const [statusMessage, setStatusMessage] = useState("");
+
+  // ─── Reset form when drawer opens/closes ───
+  useEffect(() => {
+    if (!isDrawerOpen) {
+      setStatus("idle");
+      setStatusMessage("");
+    }
+  }, [isDrawerOpen]);
 
   // Esc to close
   useEffect(() => {
@@ -44,6 +67,45 @@ export default function QuoteDrawer() {
       document.body.style.overflow = "";
     };
   }, [isDrawerOpen]);
+
+  // ─── Submit ───
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+
+    if (items.length === 0) return;
+    if (status === "loading") return;
+
+    setStatus("loading");
+    setStatusMessage("");
+
+    const result = await submitInquiry({
+      name: name.trim(),
+      email: email.trim(),
+      phone: phone.trim(),
+      company: company.trim(),
+      notes: notes.trim() || undefined,
+      items: items.map((item) => ({
+        product_id: item.productId,
+        quantity: item.quantity,
+      })),
+    });
+
+    if (result.success) {
+      setStatus("success");
+      setStatusMessage("Quote request submitted! We'll get back to you within 24 hours.");
+      setName(""); setEmail(""); setCompany(""); setPhone(""); setNotes("");
+      // Clear items after a brief delay so user sees the success state
+      setTimeout(() => {
+        clearAll();
+        closeDrawer();
+        setStatus("idle");
+        setStatusMessage("");
+      }, 2000);
+    } else {
+      setStatus("error");
+      setStatusMessage(result.message);
+    }
+  };
 
   return (
     <>
@@ -179,30 +241,149 @@ export default function QuoteDrawer() {
           )}
         </div>
 
-        {/* Footer */}
+        {/* Footer — form + actions */}
         {items.length > 0 && (
-          <div className="border-t border-neutral-100 p-4 space-y-3 shrink-0">
+          <div className="border-t border-neutral-100 p-4 shrink-0">
             {/* Summary */}
-            <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center justify-between text-sm mb-4">
               <span className="text-neutral-500">Total items</span>
               <span className="font-semibold text-neutral-900">
                 {items.reduce((sum, i) => sum + i.quantity, 0)} pcs
               </span>
             </div>
 
-            {/* Actions */}
-            <a
-              href="/contact"
-              className="flex items-center justify-center gap-2 w-full h-11 bg-accent-500 text-neutral-900 text-sm font-semibold rounded-md no-underline hover:bg-accent-600 transition-colors"
-              onClick={closeDrawer}
-            >
-              <PaperPlaneTilt size={16} weight="bold" />
-              Submit Quote Request
-            </a>
+            {/* Inquiry form */}
+            <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="drawer-name" className="text-[11px] font-medium text-neutral-600">
+                    Full Name *
+                  </label>
+                  <input
+                    id="drawer-name"
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="h-9 px-2.5 border border-neutral-200 rounded-md text-[13px] text-neutral-700 bg-neutral-0 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-shadow"
+                    placeholder="John Smith"
+                    disabled={status === "loading" || status === "success"}
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="drawer-email" className="text-[11px] font-medium text-neutral-600">
+                    Email *
+                  </label>
+                  <input
+                    id="drawer-email"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="h-9 px-2.5 border border-neutral-200 rounded-md text-[13px] text-neutral-700 bg-neutral-0 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-shadow"
+                    placeholder="john@company.com"
+                    disabled={status === "loading" || status === "success"}
+                  />
+                </div>
+              </div>
 
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="drawer-company" className="text-[11px] font-medium text-neutral-600">
+                    Company *
+                  </label>
+                  <input
+                    id="drawer-company"
+                    type="text"
+                    required
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
+                    className="h-9 px-2.5 border border-neutral-200 rounded-md text-[13px] text-neutral-700 bg-neutral-0 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-shadow"
+                    placeholder="Your Company Ltd."
+                    disabled={status === "loading" || status === "success"}
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="drawer-phone" className="text-[11px] font-medium text-neutral-600">
+                    Phone / WhatsApp
+                  </label>
+                  <input
+                    id="drawer-phone"
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="h-9 px-2.5 border border-neutral-200 rounded-md text-[13px] text-neutral-700 bg-neutral-0 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-shadow"
+                    placeholder="+1 555 000 0000"
+                    disabled={status === "loading" || status === "success"}
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label htmlFor="drawer-notes" className="text-[11px] font-medium text-neutral-600">
+                  Notes
+                </label>
+                <textarea
+                  id="drawer-notes"
+                  rows={2}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="px-2.5 py-1.5 border border-neutral-200 rounded-md text-[13px] text-neutral-700 bg-neutral-0 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-shadow resize-y"
+                  placeholder="Any special requirements..."
+                  disabled={status === "loading" || status === "success"}
+                />
+              </div>
+
+              {/* Status feedback */}
+              {statusMessage && (
+                <div
+                  className={`flex items-center gap-2 text-[13px] p-2.5 rounded-md ${
+                    status === "success"
+                      ? "bg-green-50 text-green-800"
+                      : status === "error"
+                        ? "bg-red-50 text-red-700"
+                        : ""
+                  }`}
+                >
+                  {status === "success" ? (
+                    <CheckCircle size={16} weight="fill" />
+                  ) : status === "error" ? (
+                    <WarningCircle size={16} weight="fill" />
+                  ) : null}
+                  {statusMessage}
+                </div>
+              )}
+
+              {/* Submit button */}
+              <button
+                type="submit"
+                disabled={status === "loading" || status === "success"}
+                className="flex items-center justify-center gap-2 w-full h-11 bg-accent-500 text-neutral-900 text-sm font-semibold rounded-md no-underline hover:bg-accent-600 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {status === "loading" ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-neutral-900/30 border-t-neutral-900 rounded-full animate-spin" />
+                    Submitting...
+                  </>
+                ) : status === "success" ? (
+                  <>
+                    <CheckCircle size={16} weight="fill" />
+                    Submitted!
+                  </>
+                ) : (
+                  <>
+                    <PaperPlaneTilt size={16} weight="bold" />
+                    Submit Quote Request
+                  </>
+                )}
+              </button>
+            </form>
+
+            {/* Clear all */}
             <button
-              className="w-full text-xs text-neutral-400 hover:text-red-500 transition-colors cursor-pointer bg-transparent border-none"
+              className="w-full text-xs text-neutral-400 hover:text-red-500 transition-colors cursor-pointer bg-transparent border-none mt-3"
               onClick={clearAll}
+              disabled={status === "loading"}
             >
               Clear all items
             </button>

@@ -180,7 +180,7 @@ export default async function ProductDetailPage({
 
               {/* Actions */}
               <div className="flex gap-3">
-                <InquiryForm slug={slug} name={product.name} moq={product.moq} />
+                <InquiryForm productId={product.id} slug={slug} name={product.name} moq={product.moq} />
                 <Button variant="secondary" size="lg" href="#">
                   <Download size={16} />
                   Download Spec Sheet

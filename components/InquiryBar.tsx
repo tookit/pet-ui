@@ -22,14 +22,14 @@ export default function InquiryBar() {
       }`}
       style={{ boxShadow: "0 -4px 16px rgba(39,36,37,0.10)" }}
     >
-      <div className="container-page flex items-center justify-between h-14 gap-4">
+      <div className="container-page flex flex-col sm:flex-row items-stretch sm:items-center justify-between h-auto sm:h-14 gap-2 sm:gap-4 py-2 sm:py-0">
         <p className="text-sm text-neutral-600">
           Ready to source?{" "}
           <strong className="text-neutral-900">
             Build your inquiry list and send one request.
           </strong>
         </p>
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 sm:flex-row">
           <div className="relative">
             <button
               className="relative inline-flex items-center gap-1.5 h-10 px-4 text-sm font-medium bg-transparent text-primary-600 border border-primary-300 rounded-md cursor-pointer hover:bg-primary-50 transition-[background,color,border-color,box-shadow] duration-fast"

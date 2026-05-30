@@ -97,10 +97,10 @@ const whyItems = [
 /* ─── HERO ─── */
 function Hero() {
   return (
-    <section className="relative pt-20 pb-18 bg-neutral-0 overflow-hidden">
-      {/* Background glow */}
+    <section className="section-hero relative pt-20 pb-18 bg-neutral-0 overflow-hidden">
+      {/* Background glow — responsive: small on mobile, full on desktop */}
       <div
-        className="absolute -top-30 -right-50 w-[700px] h-[700px] pointer-events-none"
+        className="absolute -top-20 -right-20 sm:-top-30 sm:-right-50 w-[400px] h-[400px] sm:w-[700px] sm:h-[700px] pointer-events-none"
         style={{
           background:
             "radial-gradient(ellipse, var(--color-primary-50) 0%, transparent 70%)",
@@ -214,7 +214,7 @@ function Hero() {
 /* ─── TRUST BAR ─── */
 function TrustBar() {
   return (
-    <div className="bg-neutral-50 border-y border-neutral-100 py-5">
+    <div className="section-trust bg-neutral-50 border-y border-neutral-100 py-5">
       <div className="container-page flex items-center justify-between gap-6 flex-wrap">
         {trustItems.map((item, i) => (
           <div key={item.label} className="flex items-center gap-2.5">
@@ -313,15 +313,15 @@ function CategorySection({
 
   return (
     <FadeIn>
-      <section className="py-20">
+      <section className="section-categories py-20">
         <div className="container-page">
-          <div className="flex items-end justify-between gap-6 mb-12">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 sm:gap-6 mb-12">
             <SectionHeader label="Product Lines" title="Browse by Category" />
-            <div className="flex border border-neutral-200 rounded-md overflow-hidden bg-neutral-50">
-              <button className="h-9 px-4 text-[13px] font-medium text-neutral-900 bg-neutral-0 shadow-sm cursor-pointer">
+            <div className="flex border border-neutral-200 rounded-md overflow-hidden bg-neutral-50 self-start">
+              <button className="h-9 px-4 text-[13px] font-medium text-neutral-900 bg-neutral-0 shadow-sm cursor-pointer whitespace-nowrap">
                 Aquarium
               </button>
-              <button className="h-9 px-4 text-[13px] font-medium text-neutral-500 bg-transparent cursor-pointer hover:bg-neutral-0">
+              <button className="h-9 px-4 text-[13px] font-medium text-neutral-500 bg-transparent cursor-pointer hover:bg-neutral-0 whitespace-nowrap">
                 Pet
               </button>
             </div>
@@ -346,15 +346,15 @@ function FeaturedProducts({
 }) {
   return (
     <FadeIn>
-      <section className="py-20 bg-neutral-50">
+      <section className="section-featured py-20 bg-neutral-50">
         <div className="container-page">
-          <div className="flex items-end justify-between gap-6 mb-12">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 sm:gap-6 mb-12">
             <SectionHeader
               label="Hot Items"
               title="Top-Selling Products"
               description="Our highest-reorder wholesale lines — spec sheets available on request."
             />
-            <Button variant="secondary" size="md" href="/aquarium">
+            <Button variant="secondary" size="md" href="/aquarium" className="self-start">
               View All Products
             </Button>
           </div>
@@ -419,7 +419,7 @@ function OEMSection() {
 
   return (
     <FadeIn>
-      <section className="py-20">
+      <section className="section-oem py-20">
         <div className="container-page">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             {/* Left — steps */}
@@ -521,7 +521,7 @@ function OEMSection() {
 function WhyUs() {
   return (
     <FadeIn>
-      <section className="py-20 bg-neutral-50">
+      <section className="section-why-us py-20 bg-neutral-50">
         <div className="container-page">
           <SectionHeader
             label="Why Petpallets"
@@ -557,7 +557,7 @@ function WhyUs() {
 function CTABand() {
   return (
     <FadeIn>
-      <section className="bg-primary-900 py-16">
+      <section className="section-cta bg-primary-900 py-16">
         <div className="container-page flex flex-col md:flex-row items-center justify-between gap-12">
           <div>
             <h2 className="font-display text-[32px] font-bold text-neutral-0 leading-tight tracking-[-0.02em]">
@@ -598,6 +598,8 @@ function findInTree(
   }
   return undefined;
 }
+
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const [featuredProducts, categoryTree] = await Promise.all([

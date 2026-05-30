@@ -10,6 +10,7 @@ import {
 } from "react";
 
 export interface InquiryItem {
+  productId: number;
   slug: string;
   name: string;
   imageUrl?: string;

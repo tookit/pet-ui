@@ -27,7 +27,11 @@ export async function apiFetch<T>(
     headers["X-API-Key"] = API_KEY;
   }
 
-  const res = await fetch(url.toString(), { ...init, headers });
+  const res = await fetch(url.toString(), {
+    ...init,
+    headers,
+    cache: "no-store",
+  });
 
   if (!res.ok) {
     const body = await res.text();
@@ -235,6 +239,40 @@ export async function fetchProductBySlug(
     return await apiFetch<ProductDetail>(`/products/slug/${slug}`);
   } catch {
     return null;
+  }
+}
+
+// ─── Inquiry / Quote submission ───
+
+export interface InquirySubmitPayload {
+  name: string;
+  email: string;
+  phone: string;
+  company: string;
+  notes?: string;
+  items: { product_id: number; quantity: number }[];
+}
+
+export async function submitInquiry(
+  payload: InquirySubmitPayload,
+): Promise<{ success: boolean; message: string }> {
+  try {
+    await apiFetch("/quotes", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    return { success: true, message: "Quote request submitted successfully." };
+  } catch (err) {
+    const msg =
+      err instanceof Error ? err.message : "Submission failed. Please try again.";
+    // Check for rate limit
+    if (msg.includes("429")) {
+      return {
+        success: false,
+        message: "Too many requests. Please wait a moment and try again.",
+      };
+    }
+    return { success: false, message: msg };
   }
 }
 

@@ -99,7 +99,7 @@ export default function OEMPage() {
   return (
     <>
       {/* Hero */}
-      <section className="pt-20 pb-16 text-center bg-linear-to-br from-primary-50 to-neutral-0">
+      <section className="section-hero pt-20 pb-16 text-center bg-linear-to-br from-primary-50 to-neutral-0">
         <div className="container-page">
           <div className="text-[11px] font-semibold tracking-[0.12em] uppercase text-primary-600 mb-3">
             Manufacturing Services
@@ -116,7 +116,7 @@ export default function OEMPage() {
 
       {/* Process steps */}
       <FadeIn>
-        <section className="py-20">
+        <section className="section-process py-20">
           <div className="container-page max-w-[800px]">
             <div className="text-center mb-14">
               <div className="text-[11px] font-semibold tracking-[0.12em] uppercase text-primary-600 mb-3">
@@ -161,7 +161,7 @@ export default function OEMPage() {
 
       {/* Capabilities */}
       <FadeIn>
-        <section className="py-20 bg-neutral-50">
+        <section className="section-capabilities py-20 bg-neutral-50">
           <div className="container-page">
             <div className="text-center mb-14">
               <div className="text-[11px] font-semibold tracking-[0.12em] uppercase text-primary-600 mb-3">
@@ -211,7 +211,7 @@ export default function OEMPage() {
 
       {/* Case studies */}
       <FadeIn>
-        <section className="py-20">
+        <section className="section-case-studies py-20">
           <div className="container-page max-w-[900px]">
             <div className="text-center mb-14">
               <div className="text-[11px] font-semibold tracking-[0.12em] uppercase text-primary-600 mb-3">
