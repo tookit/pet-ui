@@ -1,0 +1,145 @@
+@import "tailwindcss";
+
+/* ─── DESIGN.md Design Tokens → Tailwind v4 @theme ─── */
+
+@theme {
+  /* Primary — Mint Teal */
+  --color-primary-50: #F2FBF8;
+  --color-primary-100: #DFF5EE;
+  --color-primary-200: #BFECD9;
+  --color-primary-300: #9FE0C5;
+  --color-primary-400: #7FD1BE;
+  --color-primary-500: #5CC4A8;
+  --color-primary-600: #45B095;
+  --color-primary-700: #368F79;
+  --color-primary-800: #286B5B;
+  --color-primary-900: #1A473D;
+
+  /* Accent — Warm Gold */
+  --color-accent-100: #FDF5E0;
+  --color-accent-300: #F5D88A;
+  --color-accent-500: #E7AD42;
+  --color-accent-700: #B8851A;
+
+  /* Neutral — Cool Gray */
+  --color-neutral-0: #FFFFFF;
+  --color-neutral-50: #F7F6F7;
+  --color-neutral-100: #EDEBEC;
+  --color-neutral-200: #D9D6D7;
+  --color-neutral-300: #BEBABB;
+  --color-neutral-400: #9E999B;
+  --color-neutral-500: #7E787A;
+  --color-neutral-600: #5F595B;
+  --color-neutral-700: #484345;
+  --color-neutral-800: #312D2F;
+  --color-neutral-900: #272425;
+  --color-neutral-950: #141112;
+
+  /* Semantic */
+  --color-success: #2D8C5A;
+  --color-warning: #E7AD42;
+  --color-error: #D14343;
+  --color-info: #3B82C4;
+
+  /* Typography */
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-cjk: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+
+  /* Type scale (DESIGN.md 4px baseline) */
+  --text-xs: 0.75rem;     /* 12px */
+  --text-sm: 0.875rem;    /* 14px */
+  --text-base: 1rem;      /* 16px */
+  --text-lg: 1.125rem;    /* 18px */
+  --text-xl: 1.25rem;     /* 20px */
+  --text-2xl: 1.5rem;     /* 24px */
+  --text-3xl: 1.875rem;   /* 30px */
+  --text-4xl: 2.25rem;    /* 36px */
+  --text-5xl: 3rem;       /* 48px */
+  --text-6xl: 3.75rem;    /* 60px */
+
+  --leading-tight: 1.2;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+
+  /* Spacing (4px base) */
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-5: 1.25rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+  --spacing-10: 2.5rem;
+  --spacing-12: 3rem;
+  --spacing-16: 4rem;
+  --spacing-20: 5rem;
+
+  /* Layout */
+  --container-sm: 640px;
+  --container-md: 768px;
+  --container-lg: 1024px;
+  --container-xl: 1280px;
+  --container-2xl: 1536px;
+
+  /* Border radius */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(39, 36, 37, 0.06);
+  --shadow-md: 0 2px 8px rgba(39, 36, 37, 0.08);
+  --shadow-lg: 0 4px 16px rgba(39, 36, 37, 0.10);
+
+  /* Motion */
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+
+  /* Breakpoints (Tailwind-compatible) */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+}
+
+/* ─── Base ─── */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+    color: var(--color-neutral-900);
+    background: var(--color-neutral-0);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* ─── Utility ─── */
+.container-page {
+  max-width: var(--container-xl);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--spacing-6);
+  padding-right: var(--spacing-6);
+}
+
+/* Scroll fade-in — progressive enhancement */
+.fade-in {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity var(--duration-slow) var(--ease-default),
+              transform var(--duration-slow) var(--ease-default);
+}
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
