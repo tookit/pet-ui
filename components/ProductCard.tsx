@@ -101,8 +101,9 @@ function QuickViewModal({
   if (!isOpen) return null;
 
   const handleAdd = () => {
+    if (!detail?.id) return;
     addItem({
-      productId: detail?.id ?? 0,
+      productId: detail.id,
       slug,
       name: detail?.name ?? productName,
       imageUrl:
@@ -255,7 +256,8 @@ function QuickViewModal({
                   </button>
                 ) : (
                   <button
-                    className="inline-flex items-center gap-1.5 h-10 px-4 text-sm font-medium bg-primary-500 text-neutral-0 rounded-md cursor-pointer hover:bg-primary-600 transition-colors"
+                    disabled={loading}
+                    className="inline-flex items-center gap-1.5 h-10 px-4 text-sm font-medium bg-primary-500 text-neutral-0 rounded-md cursor-pointer hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={handleAdd}
                   >
                     <Plus size={16} />

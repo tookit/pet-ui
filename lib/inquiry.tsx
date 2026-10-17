@@ -41,12 +41,24 @@ function loadFromStorage(): InquiryItem[] {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw) as Partial<InquiryItem>[];
-    // Migrate old items missing the quantity field
-    return parsed.map((item) => ({
-      ...item,
-      quantity: item.quantity ?? item.moq ?? 1,
-      addedAt: item.addedAt ?? Date.now(),
-    })) as InquiryItem[];
+    // Migrate old items missing the quantity field, and drop items without a
+    // valid product_id (pre-productId schema) — those can't be submitted.
+    return parsed
+      .filter(
+        (item) =>
+          typeof item.productId === "number" &&
+          item.productId > 0 &&
+          typeof item.slug === "string" &&
+          item.slug.length > 0,
+      )
+      .map((item) => ({
+        ...item,
+        productId: item.productId!,
+        slug: item.slug!,
+        name: item.name ?? "",
+        quantity: item.quantity ?? item.moq ?? 1,
+        addedAt: item.addedAt ?? Date.now(),
+      })) as InquiryItem[];
   } catch {
     return [];
   }
