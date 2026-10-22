@@ -122,7 +122,7 @@ export default function QuoteDrawer() {
       {/* Drawer panel */}
       <div
         ref={panelRef}
-        className={`fixed top-0 right-0 bottom-0 z-210 w-full sm:w-96 bg-neutral-0 shadow-xl flex flex-col transition-transform duration-normal ${
+        className={`fixed top-0 right-0 bottom-0 z-210 w-full sm:w-[480px] lg:w-[560px] bg-neutral-0 shadow-xl flex flex-col transition-transform duration-normal ${
           isDrawerOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >

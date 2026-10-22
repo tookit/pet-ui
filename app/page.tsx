@@ -20,6 +20,7 @@ import {
   Ruler,
   UserCircle,
 } from "@phosphor-icons/react/dist/ssr";
+import Image from "next/image";
 import Button from "@/components/Button";
 import SectionHeader from "@/components/SectionHeader";
 import FadeIn from "@/components/FadeIn";
@@ -51,6 +52,13 @@ const CATEGORY_ICONS: Record<string, React.ElementType> = {
   toys: Package,
   grooming: Wrench,
   feeding: Article,
+};
+
+const CATEGORY_IMAGES: Record<string, string> = {
+  aquarium: "/images/categories/aquariums.png",
+  "aquarium-filters": "/images/categories/aquarium-filters.png",
+  "aquarium-lighting": "/images/categories/aquarium-lighting.png",
+  "aquarium-plants": "/images/categories/aquarium-plants.png",
 };
 
 function iconForCategory(cat: CategoryTree): React.ElementType {
@@ -236,12 +244,14 @@ function TrustBar() {
 function CategoryCard({
   href,
   icon: Icon,
+  image,
   label,
   name,
   count,
 }: {
   href: string;
   icon: React.ElementType;
+  image?: string;
   label: string;
   name: string;
   count: string;
@@ -252,8 +262,18 @@ function CategoryCard({
       className="group bg-neutral-0 border border-neutral-100 rounded-md p-5 no-underline block transition-[box-shadow,border-color] duration-normal hover:shadow-sm hover:border-primary-200"
     >
       <div className="w-full aspect-3/2 bg-neutral-50 rounded-sm mb-4 flex items-center justify-center overflow-hidden relative">
-        <Icon size={48} className="text-neutral-300" />
-        <span className="absolute bottom-2 left-2 text-[10px] font-semibold tracking-[0.06em] uppercase text-neutral-400">
+        {image ? (
+          <Image
+            src={image}
+            alt={`${name} wholesale category`}
+            fill
+            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+            className="object-cover transition-transform duration-normal group-hover:scale-[1.02]"
+          />
+        ) : (
+          <Icon size={48} className="text-neutral-300" />
+        )}
+        <span className="absolute bottom-2 left-2 rounded-sm bg-white/88 px-2 py-1 text-[10px] font-semibold tracking-[0.06em] uppercase text-neutral-600 backdrop-blur-sm">
           {label}
         </span>
       </div>
@@ -276,6 +296,7 @@ function CategorySection({
       ? aquariumCategories.slice(0, 4).map((cat) => ({
           href: `/aquarium?category=${cat.slug}`,
           icon: iconForCategory(cat),
+          image: CATEGORY_IMAGES[cat.slug],
           label: cat.slug,
           name: cat.name,
           count: `${cat.children.length} subcategories`,
@@ -284,30 +305,34 @@ function CategorySection({
           {
             href: "/aquarium",
             icon: Fish,
-            label: "Filtration",
-            name: "Filtration Systems",
-            count: "142 products",
+            image: CATEGORY_IMAGES.aquarium,
+            label: "Aquarium",
+            name: "Aquariums",
+            count: "Browse products",
+          },
+          {
+            href: "/aquarium",
+            icon: Fish,
+            image: CATEGORY_IMAGES["aquarium-filters"],
+            label: "Aquarium Filters",
+            name: "Aquarium Filters",
+            count: "Browse products",
           },
           {
             href: "/aquarium",
             icon: Sparkle,
-            label: "Lighting",
+            image: CATEGORY_IMAGES["aquarium-lighting"],
+            label: "Aquarium Lighting",
             name: "Aquarium Lighting",
-            count: "89 products",
-          },
-          {
-            href: "/aquarium",
-            icon: Ruler,
-            label: "Substrate",
-            name: "Substrates & Gravel",
-            count: "67 products",
+            count: "Browse products",
           },
           {
             href: "/aquarium",
             icon: Article,
-            label: "Decor",
-            name: "Decor & Ornaments",
-            count: "310 products",
+            image: CATEGORY_IMAGES["aquarium-plants"],
+            label: "Aquarium Plants",
+            name: "Aquarium Plants",
+            count: "Browse products",
           },
         ];
 
