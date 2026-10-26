@@ -1,237 +1,157 @@
+import Image from "next/image";
 import {
-  Fish,
-  PawPrint,
+  ArrowRight,
+  CheckCircle,
+  Factory,
+  Globe,
   ShieldCheck,
   Truck,
-  CheckCircle,
-  Clock,
-  Users,
-  CaretRight,
-  ArrowRight,
-  Circle,
-  Sparkle,
-  Download,
-  Globe,
-  Wrench,
-  Package,
-  Cpu,
-  Article,
-  Heartbeat,
-  Ruler,
-  UserCircle,
 } from "@phosphor-icons/react/dist/ssr";
-import Image from "next/image";
 import Button from "@/components/Button";
-import SectionHeader from "@/components/SectionHeader";
-import FadeIn from "@/components/FadeIn";
-import {
-  fetchFeaturedProducts,
-  fetchCategoryTree,
-  type ProductListItem,
-  type CategoryTree,
-} from "@/lib/api";
+import HomeProductCatalog from "@/components/HomeProductCatalog";
 import ProductCard from "@/components/ProductCard";
+import SectionHeader from "@/components/SectionHeader";
+import { fetchActiveProducts, type ProductListItem } from "@/lib/api";
 
-/* ─── STATIC DATA ─── */
-const trustItems = [
-  { icon: ShieldCheck, value: "ISO 9001:2015", label: "Quality Management" },
-  { icon: Truck, value: "Sea / Air / Rail", label: "Global Shipping" },
-  { icon: CheckCircle, value: "CE · RoHS · REACH", label: "Certifications" },
-  { icon: Clock, value: "30 Days", label: "Sample Lead Time" },
-  { icon: Users, value: "Dedicated Rep", label: "B2B Account Manager" },
+const categories = [
+  {
+    name: "Aquariums",
+    description: "Tanks and aquatic habitats",
+    image: "/images/categories/aquariums.png",
+    href: "/aquarium?category=aquarium",
+  },
+  {
+    name: "Aquarium Filters",
+    description: "Filtration equipment",
+    image: "/images/categories/aquarium-filters.png",
+    href: "/aquarium?category=aquarium-filters",
+  },
+  {
+    name: "Aquarium Lighting",
+    description: "Lighting for every setup",
+    image: "/images/categories/aquarium-lighting.png",
+    href: "/aquarium?category=aquarium-lighting",
+  },
+  {
+    name: "Aquarium Plants",
+    description: "Natural aquascaping",
+    image: "/images/categories/aquarium-plants.png",
+    href: "/aquarium?category=aquarium-plants",
+  },
+  {
+    name: "Pet Products",
+    description: "Everyday pet care",
+    image: "/images/home/pet-products.png",
+    href: "/pet",
+  },
+] as const;
+
+const catalogCategories = [
+  "aquarium",
+  "aquarium-filters",
+  "aquarium-decor",
+  "aquarium-lighting",
 ];
 
-const CATEGORY_ICONS: Record<string, React.ElementType> = {
-  aquarium: Fish,
-  filtration: Fish,
-  lighting: Sparkle,
-  substrate: Ruler,
-  decor: Article,
-  pet: PawPrint,
-  bedding: Heartbeat,
-  toys: Package,
-  grooming: Wrench,
-  feeding: Article,
-};
+function selectBalancedProducts(
+  products: ProductListItem[],
+  limit: number,
+  excludedIds: Set<number> = new Set(),
+): ProductListItem[] {
+  const selected: ProductListItem[] = [];
+  const seen = new Set(excludedIds);
+  const groups = catalogCategories.map((slug) =>
+    products.filter((product) =>
+      product.categories.some((category) => category.slug === slug),
+    ),
+  );
 
-const CATEGORY_IMAGES: Record<string, string> = {
-  aquarium: "/images/categories/aquariums.png",
-  "aquarium-filters": "/images/categories/aquarium-filters.png",
-  "aquarium-lighting": "/images/categories/aquarium-lighting.png",
-  "aquarium-plants": "/images/categories/aquarium-plants.png",
-};
-
-function iconForCategory(cat: CategoryTree): React.ElementType {
-  const slug = cat.slug.toLowerCase();
-  for (const [key, icon] of Object.entries(CATEGORY_ICONS)) {
-    if (slug.includes(key)) return icon;
+  while (selected.length < limit) {
+    let found = false;
+    for (const group of groups) {
+      const next = group.find((product) => !seen.has(product.id));
+      if (!next) continue;
+      selected.push(next);
+      seen.add(next.id);
+      found = true;
+      if (selected.length === limit) break;
+    }
+    if (!found) break;
   }
-  return Package;
+
+  if (selected.length < limit) {
+    for (const product of products) {
+      if (seen.has(product.id)) continue;
+      selected.push(product);
+      seen.add(product.id);
+      if (selected.length === limit) break;
+    }
+  }
+
+  return selected;
 }
 
-const whyItems = [
-  {
-    icon: ShieldCheck,
-    title: "Factory Direct Pricing",
-    desc: "No middlemen. Every product is made in our own certified factory, passing the full margin saving to you.",
-  },
-  {
-    icon: CheckCircle,
-    title: "Full Compliance Support",
-    desc: "We prepare CE, RoHS, REACH, and country-specific documents. Never hold a shipment at customs for paperwork.",
-  },
-  {
-    icon: Globe,
-    title: "80+ Country Track Record",
-    desc: "From Amazon FBA prep to container-load shipping, our logistics team has handled it before. Your market is not new to us.",
-  },
-  {
-    icon: Wrench,
-    title: "In-House R&D",
-    desc: "10-person product development team. From trend scouting to tooling, we can develop new products in as little as 90 days.",
-  },
-  {
-    icon: Package,
-    title: "Digital Product Library",
-    desc: "Every SKU comes with high-res images, spec PDFs, and packaging dielines — ready for your website or marketplace.",
-  },
-  {
-    icon: UserCircle,
-    title: "Dedicated Account Team",
-    desc: "One point of contact from sampling through to reorder. WhatsApp, email, or video call — your timeline, your channel.",
-  },
-];
-
-/* ─── HERO ─── */
-function Hero() {
+function Hero({ productCount }: { productCount: number }) {
   return (
-    <section className="section-hero relative pt-20 pb-18 bg-neutral-0 overflow-hidden">
-      {/* Background glow — responsive: small on mobile, full on desktop */}
-      <div
-        className="absolute -top-20 -right-20 sm:-top-30 sm:-right-50 w-[400px] h-[400px] sm:w-[700px] sm:h-[700px] pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse, var(--color-primary-50) 0%, transparent 70%)",
-        }}
-      />
-
-      <div className="container-page">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-          {/* Left — copy */}
-          <div>
-            <div className="inline-flex items-center gap-2 text-xs font-semibold tracking-[0.08em] uppercase text-primary-700 bg-primary-100 px-2.5 py-1 rounded-sm mb-5">
-              <Circle size={12} weight="fill" className="text-primary-600" />
-              Factory Direct · OEM / ODM Available
-            </div>
-
-            <h1 className="font-display text-[clamp(36px,5vw,60px)] font-bold leading-[1.1] text-neutral-900 tracking-[-0.02em] mb-5">
-              Where <em className="italic text-primary-700">Nature</em>
-              <br />
-              Meets Precision
-            </h1>
-
-            <p className="text-lg leading-relaxed text-neutral-500 mb-9 max-w-[480px]">
-              B2B wholesale supplier of aquarium supplies and pet products. 15+
-              years of manufacturing, 80+ countries served, ISO-certified
-              production lines.
+    <section className="bg-neutral-0 border-b border-neutral-100">
+      <div className="container-page grid lg:grid-cols-[52%_48%] min-h-[420px]">
+        <div className="relative z-10 flex flex-col justify-center py-14 lg:py-16 lg:pr-10">
+          <p className="text-[11px] font-semibold tracking-[0.12em] uppercase text-primary-700 mb-4">
+            B2B Wholesale Supplier
+          </p>
+          <h1 className="font-display text-[clamp(38px,4.2vw,58px)] font-bold text-neutral-900 tracking-[-0.025em] leading-[1.12] max-w-[620px]">
+            Source aquarium &amp; pet products at scale
+          </h1>
+          <p className="text-base text-neutral-600 leading-relaxed mt-5 max-w-[530px]">
+            Explore factory-direct products for your market. Compare specifications,
+            build an inquiry list, and source from one experienced export team.
+          </p>
+          <div className="flex items-center gap-3 flex-wrap mt-7">
+            <Button variant="primary" size="lg" href="#products">
+              Browse Products <ArrowRight size={16} />
+            </Button>
+            <Button variant="secondary" size="lg" href="/oem">
+              OEM / ODM Services
+            </Button>
+          </div>
+          {productCount > 0 && (
+            <p className="text-xs text-neutral-500 mt-7">
+              {productCount} active products in the online catalog
             </p>
-
-            <div className="flex items-center gap-3 flex-wrap">
-              <Button variant="primary" size="lg" href="/products">
-                Browse Catalogue
-              </Button>
-              <Button variant="secondary" size="lg" href="/oem">
-                OEM / ODM Services
-              </Button>
-            </div>
-
-            {/* Stats row */}
-            <div className="flex gap-8 mt-12 pt-8 border-t border-neutral-100">
-              {[
-                { num: "15+", label: "Years in Business" },
-                { num: "80+", label: "Countries Served" },
-                { num: "2,400+", label: "Active SKUs" },
-                { num: "ISO", label: "Certified Factory" },
-              ].map((s) => (
-                <div key={s.label}>
-                  <div className="font-display text-[28px] font-bold text-neutral-900 leading-none">
-                    {s.num}
-                  </div>
-                  <div className="text-xs text-neutral-400 mt-1 uppercase tracking-[0.06em]">
-                    {s.label}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Right — entry split cards */}
-          <div className="flex flex-col gap-4">
-            {[
-              {
-                href: "/aquarium",
-                icon: Fish,
-                iconBg: "bg-primary-100",
-                iconColor: "text-primary-700",
-                title: "Aquarium Supplies",
-                desc: "Filters, lighting, substrates, decor, pumps, CO₂ systems",
-              },
-              {
-                href: "/pet",
-                icon: PawPrint,
-                iconBg: "bg-accent-100",
-                iconColor: "text-accent-700",
-                title: "Pet Products",
-                desc: "Beds, toys, grooming tools, feeders, carriers, accessories",
-              },
-            ].map((card) => (
-              <a
-                key={card.href}
-                href={card.href}
-                className="group relative flex items-center gap-6 bg-neutral-0 border border-neutral-100 rounded-lg p-7 no-underline transition-[box-shadow,border-color,transform] duration-normal
-                  hover:shadow-md hover:border-primary-200 hover:translate-x-0.5
-                  before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-primary-400 before:scale-y-0 before:origin-bottom before:transition-transform before:duration-normal
-                  hover:before:scale-y-100"
-              >
-                <div
-                  className={`w-14 h-14 rounded-lg flex items-center justify-center shrink-0 ${card.iconBg}`}
-                >
-                  <card.icon size={28} className={card.iconColor} />
-                </div>
-                <div className="flex-1">
-                  <div className="text-[17px] font-semibold text-neutral-900 mb-1">
-                    {card.title}
-                  </div>
-                  <div className="text-[13px] text-neutral-400 leading-relaxed">
-                    {card.desc}
-                  </div>
-                </div>
-                <CaretRight
-                  size={20}
-                  className="text-neutral-300 group-hover:text-primary-500 group-hover:translate-x-0.5 transition-[color,transform] duration-fast"
-                />
-              </a>
-            ))}
-          </div>
+          )}
+        </div>
+        <div className="relative min-h-[270px] lg:min-h-full overflow-hidden">
+          <Image
+            src="/images/home/hero-aquarium.png"
+            alt="Modern planted aquarium displayed in a bright interior"
+            fill
+            priority
+            sizes="(min-width: 1024px) 48vw, 100vw"
+            className="object-cover object-[68%_center]"
+          />
         </div>
       </div>
     </section>
   );
 }
 
-/* ─── TRUST BAR ─── */
 function TrustBar() {
+  const items = [
+    { icon: Globe, value: "80+ countries", label: "Export experience" },
+    { icon: Factory, value: "Factory direct", label: "OEM / ODM available" },
+    { icon: Truck, value: "Global shipping", label: "Sea / air / rail" },
+    { icon: ShieldCheck, value: "ISO 9001:2015", label: "Quality management" },
+  ];
+
   return (
-    <div className="section-trust bg-neutral-50 border-y border-neutral-100 py-5">
-      <div className="container-page flex items-center justify-between gap-6 flex-wrap">
-        {trustItems.map((item, i) => (
-          <div key={item.label} className="flex items-center gap-2.5">
-            <item.icon size={20} className="text-primary-600 shrink-0" />
+    <div className="bg-neutral-50 border-b border-neutral-100">
+      <div className="container-page grid grid-cols-2 lg:grid-cols-4 gap-5 py-5">
+        {items.map((item) => (
+          <div key={item.value} className="flex items-center gap-2.5">
+            <item.icon size={21} className="text-primary-700 shrink-0" />
             <div>
-              <div className="text-[15px] font-semibold text-neutral-800">
-                {item.value}
-              </div>
-              <div className="text-[13px] text-neutral-500">{item.label}</div>
+              <p className="text-[13px] font-semibold text-neutral-800">{item.value}</p>
+              <p className="text-[11px] text-neutral-500">{item.label}</p>
             </div>
           </div>
         ))}
@@ -240,411 +160,165 @@ function TrustBar() {
   );
 }
 
-/* ─── CATEGORY GRID ─── */
-function CategoryCard({
-  href,
-  icon: Icon,
-  image,
-  label,
-  name,
-  count,
-}: {
-  href: string;
-  icon: React.ElementType;
-  image?: string;
-  label: string;
-  name: string;
-  count: string;
-}) {
+function Categories() {
   return (
-    <a
-      href={href}
-      className="group bg-neutral-0 border border-neutral-100 rounded-md p-5 no-underline block transition-[box-shadow,border-color] duration-normal hover:shadow-sm hover:border-primary-200"
-    >
-      <div className="w-full aspect-3/2 bg-neutral-50 rounded-sm mb-4 flex items-center justify-center overflow-hidden relative">
-        {image ? (
-          <Image
-            src={image}
-            alt={`${name} wholesale category`}
-            fill
-            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-            className="object-cover transition-transform duration-normal group-hover:scale-[1.02]"
-          />
-        ) : (
-          <Icon size={48} className="text-neutral-300" />
-        )}
-        <span className="absolute bottom-2 left-2 rounded-sm bg-white/88 px-2 py-1 text-[10px] font-semibold tracking-[0.06em] uppercase text-neutral-600 backdrop-blur-sm">
-          {label}
-        </span>
-      </div>
-      <div className="text-[15px] font-semibold text-neutral-900 mb-1">{name}</div>
-      <div className="text-xs text-neutral-400">{count}</div>
-      <div className="inline-flex items-center gap-1 text-xs font-medium text-primary-600 mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-fast">
-        View all <ArrowRight size={12} />
-      </div>
-    </a>
-  );
-}
-
-function CategorySection({
-  aquariumCategories,
-}: {
-  aquariumCategories: CategoryTree[];
-}) {
-  const displayCategories =
-    aquariumCategories.length > 0
-      ? aquariumCategories.slice(0, 4).map((cat) => ({
-          href: `/aquarium?category=${cat.slug}`,
-          icon: iconForCategory(cat),
-          image: CATEGORY_IMAGES[cat.slug],
-          label: cat.slug,
-          name: cat.name,
-          count: `${cat.children.length} subcategories`,
-        }))
-      : [
-          {
-            href: "/aquarium",
-            icon: Fish,
-            image: CATEGORY_IMAGES.aquarium,
-            label: "Aquarium",
-            name: "Aquariums",
-            count: "Browse products",
-          },
-          {
-            href: "/aquarium",
-            icon: Fish,
-            image: CATEGORY_IMAGES["aquarium-filters"],
-            label: "Aquarium Filters",
-            name: "Aquarium Filters",
-            count: "Browse products",
-          },
-          {
-            href: "/aquarium",
-            icon: Sparkle,
-            image: CATEGORY_IMAGES["aquarium-lighting"],
-            label: "Aquarium Lighting",
-            name: "Aquarium Lighting",
-            count: "Browse products",
-          },
-          {
-            href: "/aquarium",
-            icon: Article,
-            image: CATEGORY_IMAGES["aquarium-plants"],
-            label: "Aquarium Plants",
-            name: "Aquarium Plants",
-            count: "Browse products",
-          },
-        ];
-
-  return (
-    <FadeIn>
-      <section className="section-categories py-20">
-        <div className="container-page">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 sm:gap-6 mb-12">
-            <SectionHeader label="Product Lines" title="Browse by Category" />
-            <div className="flex border border-neutral-200 rounded-md overflow-hidden bg-neutral-50 self-start">
-              <button className="h-9 px-4 text-[13px] font-medium text-neutral-900 bg-neutral-0 shadow-sm cursor-pointer whitespace-nowrap">
-                Aquarium
-              </button>
-              <button className="h-9 px-4 text-[13px] font-medium text-neutral-500 bg-transparent cursor-pointer hover:bg-neutral-0 whitespace-nowrap">
-                Pet
-              </button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {displayCategories.map((cat) => (
-              <CategoryCard key={cat.name} {...cat} />
-            ))}
-          </div>
+    <section className="py-12 md:py-14">
+      <div className="container-page">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+          <SectionHeader label="Shop by Category" title="Popular Categories" className="!mb-0" />
+          <a href="/aquarium" className="inline-flex items-center gap-1 text-[13px] font-medium text-primary-700 no-underline hover:underline">
+            Explore aquarium products <ArrowRight size={14} />
+          </a>
         </div>
-      </section>
-    </FadeIn>
-  );
-}
-
-/* ─── FEATURED PRODUCTS ─── */
-function FeaturedProducts({
-  products,
-}: {
-  products: ProductListItem[];
-}) {
-  return (
-    <FadeIn>
-      <section className="section-featured py-20 bg-neutral-50">
-        <div className="container-page">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 sm:gap-6 mb-12">
-            <SectionHeader
-              label="Hot Items"
-              title="Top-Selling Products"
-              description="Our highest-reorder wholesale lines — spec sheets available on request."
-            />
-            <Button variant="secondary" size="md" href="/aquarium" className="self-start">
-              View All Products
-            </Button>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {products.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
-        </div>
-      </section>
-    </FadeIn>
-  );
-}
-
-/* ─── OEM SECTION ─── */
-function OEMSection() {
-  const steps = [
-    {
-      title: "Brief & Feasibility",
-      desc: "Share your product idea, reference samples, or spec sheet. We confirm feasibility and MOQ within 48 hours.",
-    },
-    {
-      title: "Design & Sampling",
-      desc: "Our design team produces 2D/3D renders and physical samples. Average sample lead time: 20–30 days.",
-    },
-    {
-      title: "Tooling & Approval",
-      desc: "Mold or tooling fabrication. Pre-production sample approval before mass production begins.",
-    },
-    {
-      title: "Production & QC",
-      desc: "ISO-controlled production with inline and final QC inspection. Third-party inspection welcome.",
-    },
-    {
-      title: "Packaging & Export",
-      desc: "Custom packaging design, compliance documentation, FCL/LCL booking to your port.",
-    },
-  ];
-
-  const capabilities = [
-    {
-      icon: Cpu,
-      title: "Plastics",
-      desc: "ABS, PP, TPE, PC, Nylon — injection & blow molding",
-    },
-    {
-      icon: Cpu,
-      title: "Electronics",
-      desc: "LED drivers, pumps, controllers — CE/RoHS certified",
-    },
-    {
-      icon: Package,
-      title: "Packaging",
-      desc: "Color box, FSC paper, retail-ready blister",
-    },
-    {
-      icon: Article,
-      title: "Textiles",
-      desc: "Plush, Oxford cloth, mesh — cut & sew in-house",
-    },
-  ];
-
-  return (
-    <FadeIn>
-      <section className="section-oem py-20">
-        <div className="container-page">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-            {/* Left — steps */}
-            <div>
-              <SectionHeader
-                label="Manufacturing Services"
-                title="OEM / ODM from Concept to Carton"
-              />
-              <p className="text-base text-neutral-500 leading-relaxed max-w-[560px] -mt-8 mb-9">
-                Full-service private label manufacturing. Bring your brand, your
-                specs, or just an idea — we handle tooling, production, QC, and
-                export compliance.
-              </p>
-
-              <div className="flex flex-col">
-                {steps.map((step, i) => (
-                  <div key={step.title} className="flex gap-5 relative pb-7 last:pb-0">
-                    <div className="flex flex-col items-center shrink-0">
-                      <div className="w-9 h-9 rounded-full bg-primary-100 text-primary-700 text-[13px] font-bold flex items-center justify-center">
-                        {String(i + 1).padStart(2, "0")}
-                      </div>
-                      {i < steps.length - 1 && (
-                        <div className="w-px flex-1 bg-neutral-100 mt-2" />
-                      )}
-                    </div>
-                    <div>
-                      <div className="text-[15px] font-semibold text-neutral-900 mb-1 mt-1.5">
-                        {step.title}
-                      </div>
-                      <div className="text-[13px] text-neutral-500 leading-relaxed">
-                        {step.desc}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+          {categories.map((category) => (
+            <a
+              key={category.name}
+              href={category.href}
+              className="group min-w-0 border border-neutral-100 rounded-md bg-neutral-0 overflow-hidden no-underline hover:border-primary-300 hover:shadow-sm transition-[border-color,box-shadow] duration-normal"
+            >
+              <div className="relative aspect-4/3 bg-neutral-50 overflow-hidden">
+                <Image
+                  src={category.image}
+                  alt={category.name}
+                  fill
+                  sizes="(min-width: 1024px) 20vw, (min-width: 768px) 33vw, 50vw"
+                  className="object-cover group-hover:scale-[1.03] transition-transform duration-normal"
+                />
               </div>
-
-              <div className="mt-9">
-                <Button variant="accent" size="lg" href="/oem">
-                  Explore OEM Services
-                </Button>
-              </div>
-            </div>
-
-            {/* Right — capabilities card */}
-            <div className="bg-neutral-50 border border-neutral-100 rounded-lg p-8">
-              <div className="text-[13px] font-semibold text-neutral-700 mb-4 uppercase tracking-[0.08em]">
-                Manufacturing Capabilities
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                {capabilities.map((cap) => (
-                  <div
-                    key={cap.title}
-                    className="bg-neutral-0 border border-neutral-100 rounded-md p-4"
-                  >
-                    <div className="w-8 h-8 bg-primary-100 rounded-md flex items-center justify-center mb-2.5 text-primary-700">
-                      <cap.icon size={18} />
-                    </div>
-                    <div className="text-[13px] font-semibold text-neutral-800 mb-0.5">
-                      {cap.title}
-                    </div>
-                    <div className="text-xs text-neutral-400">{cap.desc}</div>
-                  </div>
-                ))}
-              </div>
-
-              {/* MOQ guide */}
-              <div className="mt-4 p-4 bg-primary-50 rounded-md border border-primary-200">
-                <div className="text-[13px] font-semibold text-primary-800 mb-1.5">
-                  Minimum Order Guide
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-xs text-neutral-600">
-                  <div>
-                    Standard reorder:{" "}
-                    <strong className="text-neutral-900">50–200 pcs</strong>
-                  </div>
-                  <div>
-                    New OEM tooling:{" "}
-                    <strong className="text-neutral-900">500+ pcs</strong>
-                  </div>
-                  <div>
-                    Sample order:{" "}
-                    <strong className="text-neutral-900">1–5 pcs</strong>
-                  </div>
-                  <div>
-                    Container: <strong className="text-neutral-900">FCL / LCL</strong>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </FadeIn>
-  );
-}
-
-/* ─── WHY US ─── */
-function WhyUs() {
-  return (
-    <FadeIn>
-      <section className="section-why-us py-20 bg-neutral-50">
-        <div className="container-page">
-          <SectionHeader
-            label="Why Petpallets"
-            title="Built for the Wholesale Buyer"
-            align="center"
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 border border-neutral-200 rounded-lg overflow-hidden">
-            {whyItems.map((item) => (
-              <div
-                key={item.title}
-                className="bg-neutral-0 p-8 border-b border-r border-neutral-200 last:border-b-0 [&:nth-child(3)]:border-r-0 md:[&:nth-child(3)]:border-r [&:nth-child(3)]:border-b lg:[&:nth-child(3)]:border-r-0"
-              >
-                <div className="w-10 h-10 bg-primary-100 rounded-md flex items-center justify-center text-primary-700 mb-4">
-                  <item.icon size={20} />
-                </div>
-                <h3 className="text-base font-semibold text-neutral-900 mb-2">
-                  {item.title}
+              <div className="p-3">
+                <h3 className="text-[13px] font-semibold text-neutral-900 group-hover:text-primary-700">
+                  {category.name}
                 </h3>
-                <p className="text-sm text-neutral-500 leading-relaxed">
-                  {item.desc}
-                </p>
+                <p className="text-xs text-neutral-500 mt-0.5">{category.description}</p>
               </div>
-            ))}
-          </div>
+            </a>
+          ))}
         </div>
-      </section>
-    </FadeIn>
+      </div>
+    </section>
   );
 }
 
-/* ─── CTA BAND ─── */
-function CTABand() {
+function Showcase({ products }: { products: ProductListItem[] }) {
+  if (products.length === 0) return null;
+
   return (
-    <FadeIn>
-      <section className="section-cta bg-primary-900 py-16">
-        <div className="container-page flex flex-col md:flex-row items-center justify-between gap-12">
-          <div>
-            <h2 className="font-display text-[32px] font-bold text-neutral-0 leading-tight tracking-[-0.02em]">
-              Ready to Source
-              <br />
-              <em className="italic text-primary-300">at Scale?</em>
-            </h2>
-            <p className="text-base text-primary-300 mt-2">
-              Send your product list or sourcing brief — we&apos;ll respond with
-              pricing within 24 hours.
-            </p>
-          </div>
-          <div className="flex gap-3 shrink-0">
-            <Button variant="accent" size="lg" href="/contact">
-              Send an Inquiry
-            </Button>
-            <Button variant="outline-light" size="lg" href="#">
-              <Download size={16} />
-              Download Catalogue
-            </Button>
-          </div>
+    <section className="py-12 md:py-14 bg-neutral-50">
+      <div className="container-page">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+          <SectionHeader
+            label="Selected Products"
+            title="Wholesale Products to Explore"
+            description="A selection from our active catalog, ready to add to your inquiry."
+            className="!mb-0"
+          />
+          <a href="#products" className="inline-flex items-center gap-1 text-[13px] font-medium text-primary-700 no-underline hover:underline shrink-0">
+            View more products <ArrowRight size={14} />
+          </a>
         </div>
-      </section>
-    </FadeIn>
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
+          {products.map((product) => (
+            <ProductCard key={product.id} product={product} compact />
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
-/* ─── PAGE ─── */
-/** Recursively find a category by slug anywhere in the tree. */
-function findInTree(
-  nodes: CategoryTree[],
-  slug: string,
-): CategoryTree | undefined {
-  for (const node of nodes) {
-    if (node.slug === slug) return node;
-    const found = findInTree(node.children, slug);
-    if (found) return found;
-  }
-  return undefined;
+function Catalog({ products }: { products: ProductListItem[] }) {
+  return (
+    <section id="products" className="py-12 md:py-14 scroll-mt-16">
+      <div className="container-page">
+        <SectionHeader
+          label="Wholesale Product Range"
+          title="Explore Our Product Selection"
+          description="Find products for your next order and add them to one inquiry."
+          className="!mb-0"
+        />
+        {products.length > 0 && <HomeProductCatalog products={products} />}
+        {products.length === 0 && (
+          <div className="mt-8 bg-neutral-50 border border-neutral-100 rounded-md px-6 py-12 text-center">
+            <p className="font-medium text-neutral-800">Products are temporarily unavailable.</p>
+            <p className="text-sm text-neutral-500 mt-1">Browse a category or contact us with your sourcing brief.</p>
+          </div>
+        )}
+        <div className="text-center mt-9">
+          <Button variant="secondary" size="md" href="/aquarium">
+            Browse the Aquarium Range <ArrowRight size={15} />
+          </Button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ValueStrip() {
+  const values = [
+    { icon: Factory, title: "Factory Direct", text: "Work with the manufacturing team." },
+    { icon: CheckCircle, title: "OEM / ODM", text: "Develop your own product line." },
+    { icon: Truck, title: "Export Support", text: "Coordinate shipment to your market." },
+    { icon: ShieldCheck, title: "Quality Process", text: "Documented production controls." },
+  ];
+
+  return (
+    <section className="bg-neutral-50 border-y border-neutral-100">
+      <div className="container-page grid grid-cols-2 lg:grid-cols-4 gap-6 py-9">
+        {values.map((value) => (
+          <div key={value.title} className="flex gap-3">
+            <value.icon size={23} className="text-primary-700 shrink-0" />
+            <div>
+              <h3 className="text-[13px] font-semibold text-neutral-900">{value.title}</h3>
+              <p className="text-xs text-neutral-500 mt-1">{value.text}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function CallToAction() {
+  return (
+    <section className="bg-primary-900 py-12">
+      <div className="container-page flex flex-col md:flex-row md:items-center md:justify-between gap-7">
+        <div>
+          <h2 className="font-display text-[clamp(26px,3vw,34px)] font-bold text-neutral-0 leading-tight">
+            Ready to source for your market?
+          </h2>
+          <p className="text-sm text-primary-200 mt-2">
+            Add products to your inquiry list and send one request to our team.
+          </p>
+        </div>
+        <Button variant="accent" size="lg" href="/contact">
+          Send an Inquiry <ArrowRight size={16} />
+        </Button>
+      </div>
+    </section>
+  );
 }
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [featuredProducts, categoryTree] = await Promise.all([
-    fetchFeaturedProducts(3).catch(() => [] as ProductListItem[]),
-    fetchCategoryTree().catch(() => [] as CategoryTree[]),
-  ]);
-
-  // "aquarium" is nested under "fish-aquariums" — search recursively
-  const aquariumCategory = findInTree(categoryTree, "aquarium");
-  const aquariumChildren = aquariumCategory?.children ?? [];
+  const firstPage = await fetchActiveProducts().catch(() => null);
+  const secondPage = firstPage && firstPage.last_page > 1
+    ? await fetchActiveProducts(2).catch(() => null)
+    : null;
+  const products = [...(firstPage?.result ?? []), ...(secondPage?.result ?? [])];
+  const showcase = selectBalancedProducts(products, 6);
+  const catalog = selectBalancedProducts(products, 12, new Set(showcase.map((product) => product.id)));
 
   return (
     <>
-      <Hero />
+      <Hero productCount={firstPage?.total ?? 0} />
       <TrustBar />
-      <CategorySection aquariumCategories={aquariumChildren} />
-      <FeaturedProducts products={featuredProducts} />
-      <OEMSection />
-      <WhyUs />
-      <CTABand />
+      <Categories />
+      <Showcase products={showcase} />
+      <Catalog products={catalog} />
+      <ValueStrip />
+      <CallToAction />
     </>
   );
 }

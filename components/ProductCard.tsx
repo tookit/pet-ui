@@ -284,8 +284,10 @@ function QuickViewModal({
 
 export default function ProductCard({
   product,
+  compact = false,
 }: {
   product: ProductListItem;
+  compact?: boolean;
 }) {
   const [quickViewOpen, setQuickViewOpen] = useState(false);
   const { items, addItem, removeItem } = useInquiry();
@@ -323,12 +325,12 @@ export default function ProductCard({
           className="block no-underline"
           aria-label={product.name}
         >
-          <div className="w-full aspect-3/2 bg-neutral-50 flex items-center justify-center relative">
+          <div className="w-full aspect-3/2 bg-neutral-50 flex items-center justify-center relative overflow-hidden">
             {imageUrl ? (
               <img
                 src={imageUrl}
                 alt={product.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-slow"
+                className={`w-full h-full group-hover:scale-105 transition-transform duration-slow ${compact ? "object-contain" : "object-cover"}`}
                 loading="lazy"
               />
             ) : (
@@ -337,7 +339,7 @@ export default function ProductCard({
           </div>
         </Link>
 
-        <div className="p-4">
+        <div className={compact ? "px-3 pt-3 pb-2" : "p-4"}>
           {categoryName && (
             <div className="text-[11px] font-medium text-primary-600 uppercase tracking-[0.06em] mb-1.5">
               {categoryName}
@@ -347,47 +349,54 @@ export default function ProductCard({
             href={`/products/${slug}`}
             className="no-underline"
           >
-            <h3 className="text-[15px] font-semibold text-neutral-900 mb-1 group-hover:text-primary-700 transition-colors">
+            <h3 className={`font-semibold text-neutral-900 mb-1 group-hover:text-primary-700 transition-colors ${compact ? "text-[13px] leading-5 line-clamp-2 min-h-10" : "text-[15px]"}`}>
               {product.name}
             </h3>
           </Link>
+          {compact && (
+            <p className="text-xs text-neutral-500">MOQ {product.moq} pcs</p>
+          )}
         </div>
 
         {/* Footer */}
-        <div className="px-4 py-3 border-t border-neutral-100 flex items-center justify-between gap-2">
-          <span className="text-xs text-neutral-500 shrink-0">
-            MOQ{" "}
-            <strong className="text-neutral-800 font-semibold">
-              {product.moq} pcs
-            </strong>
-          </span>
-          <div className="flex items-center gap-1.5">
+        <div className={compact ? "px-3 pb-3" : "px-4 py-3 border-t border-neutral-100 flex items-center justify-between gap-2"}>
+          {!compact && (
+            <span className="text-xs text-neutral-500 shrink-0">
+              MOQ{" "}
+              <strong className="text-neutral-800 font-semibold">
+                {product.moq} pcs
+              </strong>
+            </span>
+          )}
+          <div className={compact ? "w-full" : "flex items-center gap-1.5"}>
             {/* Quick View button */}
-            <button
-              className="inline-flex items-center gap-1 h-8 px-2.5 text-xs font-medium text-neutral-500 border border-neutral-200 rounded-md cursor-pointer hover:text-neutral-700 hover:border-neutral-300 hover:bg-neutral-50 transition-[background,color,border-color] duration-fast"
-              onClick={() => setQuickViewOpen(true)}
-              aria-label={`Quick view: ${product.name}`}
-            >
-              <Eye size={14} />
-              Quick View
-            </button>
+            {!compact && (
+              <button
+                className="inline-flex items-center gap-1 h-8 px-2.5 text-xs font-medium text-neutral-500 border border-neutral-200 rounded-md cursor-pointer hover:text-neutral-700 hover:border-neutral-300 hover:bg-neutral-50 transition-[background,color,border-color] duration-fast"
+                onClick={() => setQuickViewOpen(true)}
+                aria-label={`Quick view: ${product.name}`}
+              >
+                <Eye size={14} />
+                Quick View
+              </button>
+            )}
 
             {/* Inquire / Add to list */}
             {isInList ? (
               <button
-                className="inline-flex items-center gap-1 h-8 px-2.5 text-xs font-medium bg-primary-100 text-primary-700 rounded-md cursor-pointer hover:bg-primary-200 transition-colors"
+                className={`inline-flex items-center justify-center gap-1 h-8 px-2.5 text-xs font-medium bg-primary-100 text-primary-700 rounded-md cursor-pointer hover:bg-primary-200 transition-colors ${compact ? "w-full" : ""}`}
                 onClick={handleAddToInquiry}
               >
                 <Check size={14} />
-                In List
+                {compact ? "Added to Inquiry" : "In List"}
               </button>
             ) : (
               <button
-                className="inline-flex items-center gap-1 h-8 px-2.5 text-xs font-medium bg-primary-500 text-neutral-0 rounded-md cursor-pointer hover:bg-primary-600 transition-colors"
+                className={`inline-flex items-center justify-center gap-1 h-8 px-2.5 text-xs font-medium rounded-md cursor-pointer transition-colors ${compact ? "w-full border border-primary-300 text-primary-700 hover:bg-primary-50" : "bg-primary-500 text-neutral-0 hover:bg-primary-600"}`}
                 onClick={handleAddToInquiry}
               >
                 <Plus size={14} />
-                Inquire
+                {compact ? "Add to Inquiry" : "Inquire"}
               </button>
             )}
           </div>
@@ -395,12 +404,14 @@ export default function ProductCard({
       </div>
 
       {/* Quick‑view modal */}
-      <QuickViewModal
-        slug={slug}
-        productName={product.name}
-        isOpen={quickViewOpen}
-        onClose={() => setQuickViewOpen(false)}
-      />
+      {!compact && (
+        <QuickViewModal
+          slug={slug}
+          productName={product.name}
+          isOpen={quickViewOpen}
+          onClose={() => setQuickViewOpen(false)}
+        />
+      )}
     </>
   );
 }

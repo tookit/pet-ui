@@ -18,21 +18,37 @@ export const metadata: Metadata = {
     "Wholesale aquarium supplies: filters, pumps, LED lighting, tanks, CO₂ systems. OEM available. ISO-certified factory.",
 };
 
-export default async function AquariumPage() {
-  // Fetch aquarium category and its children
-  const aquarium = await fetchCategoryBySlug("aquarium").catch(() => null);
+export default async function AquariumPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string; page?: string }>;
+}) {
+  const { category: categorySlug, page: pageParam } = await searchParams;
+  const requestedPage = Number(pageParam);
+  const currentPage = Number.isInteger(requestedPage) && requestedPage > 0
+    ? requestedPage
+    : 1;
+  // Aquarium subcategories sit under the Fish & Aquariums branch.
   const categoryTree = await fetchCategoryTree().catch(() => [] as CategoryTree[]);
-
-  // Get subcategories for the aquarium branch
-  const aquariumNode = categoryTree.find((c) => c.slug === "aquarium");
-  const subcategories: CategoryTree[] = aquariumNode?.children ?? [];
+  const aquariumBranch = categoryTree.find((category) => category.slug === "fish-aquariums");
+  const subcategories: CategoryTree[] = aquariumBranch?.children ?? [];
+  const aquarium = subcategories.find((category) => category.slug === "aquarium")
+    ?? await fetchCategoryBySlug("aquarium").catch(() => null);
+  const selectedCategory = subcategories.find((category) => category.slug === categorySlug)
+    ?? aquarium;
 
   // Fetch products for the aquarium category (or all published if category not found)
   let products: ProductListItem[] = [];
-  if (aquarium) {
-    const res = await fetchProductsByCategory(aquarium.id, 1, 12).catch(() => null);
+  let totalProducts = 0;
+  let lastPage = 1;
+  if (selectedCategory) {
+    const res = await fetchProductsByCategory(selectedCategory.id, currentPage, 24).catch(() => null);
     products = res?.result ?? [];
+    totalProducts = res?.total ?? 0;
+    lastPage = res?.last_page ?? 1;
   }
+  const categoryUrl = (page: number) =>
+    `/aquarium?category=${selectedCategory?.slug ?? "aquarium"}&page=${page}`;
 
   return (
     <>
@@ -43,18 +59,18 @@ export default async function AquariumPage() {
             Product Directory
           </div>
           <h1 className="font-display text-[clamp(28px,4vw,44px)] font-bold text-neutral-900 leading-tight tracking-[-0.02em] mb-3">
-            {aquarium?.name ?? "Aquarium Supplies"}
+            {selectedCategory?.name ?? "Aquarium Supplies"}
           </h1>
           <p className="text-base text-neutral-500 max-w-[480px] mx-auto leading-relaxed">
-            {aquarium?.description ??
-              "Filters, pumps, LED lighting, tanks, CO₂ systems, substrates, décor — all from our ISO-certified factory."}
+            {selectedCategory?.description ??
+              `Explore ${selectedCategory?.name.toLowerCase() ?? "aquarium supplies"} for wholesale sourcing and add products to your inquiry.`}
           </p>
         </div>
       </section>
 
       <div className="container-page">
         <Breadcrumb
-          items={[{ label: "Home", href: "/" }, { label: aquarium?.name ?? "Aquarium" }]}
+          items={[{ label: "Home", href: "/" }, { label: selectedCategory?.name ?? "Aquarium" }]}
         />
 
         {/* Filter bar */}
@@ -62,17 +78,23 @@ export default async function AquariumPage() {
           <span className="text-xs font-semibold text-neutral-400 uppercase tracking-[0.08em]">
             Filter
           </span>
-          <select
-            className="h-9 px-3 border border-neutral-200 rounded-md text-[13px] text-neutral-700 bg-neutral-0 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 min-w-[140px]"
-            defaultValue=""
-          >
-            <option value="">All Categories</option>
-            {subcategories.map((sc) => (
-              <option key={sc.id} value={sc.slug}>
-                {sc.name}
-              </option>
-            ))}
-          </select>
+          <form action="/aquarium" className="flex items-center gap-2">
+            <select
+              name="category"
+              className="h-9 px-3 border border-neutral-200 rounded-md text-[13px] text-neutral-700 bg-neutral-0 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 min-w-[140px]"
+              defaultValue={selectedCategory?.slug ?? "aquarium"}
+              aria-label="Aquarium category"
+            >
+              {subcategories.map((sc) => (
+                <option key={sc.id} value={sc.slug}>
+                  {sc.name}
+                </option>
+              ))}
+            </select>
+            <button type="submit" className="h-9 px-3 rounded-md bg-primary-500 text-neutral-0 text-[13px] font-medium cursor-pointer hover:bg-primary-600">
+              Apply
+            </button>
+          </form>
           <select className="h-9 px-3 border border-neutral-200 rounded-md text-[13px] text-neutral-700 bg-neutral-0 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 min-w-[140px]">
             <option>Sort: Featured</option>
             <option>MOQ: Low to High</option>
@@ -80,7 +102,7 @@ export default async function AquariumPage() {
             <option>Newest First</option>
           </select>
           <span className="ml-auto text-[13px] text-neutral-400">
-            {products.length} products
+            {totalProducts} products
           </span>
         </div>
       </div>
@@ -89,11 +111,24 @@ export default async function AquariumPage() {
       <section className="section-products pb-20">
         <div className="container-page">
           {products.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {products.map((p) => (
-                <ProductCard key={p.id} product={p} />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {products.map((p) => (
+                  <ProductCard key={p.id} product={p} />
+                ))}
+              </div>
+              {lastPage > 1 && (
+                <nav aria-label="Product pages" className="flex items-center justify-center gap-4 mt-9 text-sm">
+                  {currentPage > 1 && (
+                    <a href={categoryUrl(currentPage - 1)} className="text-primary-700 hover:underline">Previous</a>
+                  )}
+                  <span className="text-neutral-500">Page {currentPage} of {lastPage}</span>
+                  {currentPage < lastPage && (
+                    <a href={categoryUrl(currentPage + 1)} className="text-primary-700 hover:underline">Next</a>
+                  )}
+                </nav>
+              )}
+            </>
           ) : (
             <div className="text-center py-16 text-neutral-400">
               <Package size={48} className="mx-auto mb-4 text-neutral-200" />

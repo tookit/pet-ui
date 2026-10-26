@@ -220,6 +220,16 @@ export async function fetchFeaturedProducts(
   return res.result;
 }
 
+/** Fetch active catalog products for storefront discovery. */
+export async function fetchActiveProducts(
+  page = 1,
+  perPage = 100,
+): Promise<PaginatedResponse<ProductListItem>> {
+  return apiFetch<PaginatedResponse<ProductListItem>>(
+    `/products?status=active&page=${page}&per_page=${perPage}&sort_by=created_at&sort_order=desc`,
+  );
+}
+
 /** Fetch products by category ID. */
 export async function fetchProductsByCategory(
   categoryId: number,
