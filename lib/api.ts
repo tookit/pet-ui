@@ -64,8 +64,9 @@ export interface ProductImage {
 // Product files (ProductFileResponse)
 export interface ProductFile {
   id: number;
-  name: string;
-  type: string;
+  filename: string;
+  /** "image" | "video" | "audio" | "document" | "other" (pet-api AGGREGATE_TYPES) */
+  aggregate_type: string;
   size: number;
   url: string;
 }
@@ -190,6 +191,46 @@ export interface Category {
 // Category tree node (CategoryTreeResponse)
 export interface CategoryTree extends Category {
   children: CategoryTree[];
+}
+
+// ─── Internal sourcing props ───
+// Props written by the import pipeline for internal sourcing workflows.
+// Never render these on the public storefront.
+
+const INTERNAL_PROP_NAMES = new Set(
+  [
+    "Source",
+    "Source URL",
+    "Source Offer ID",
+    "Source Video",
+    "Import Date",
+    "Supplier",
+    "Supplier Shop",
+    "Supplier Stock",
+    "1688 Monthly Sales (approx)",
+    "Amazon ASIN",
+    "Amazon Rating",
+    "Amazon Reviews",
+  ].map((n) => n.toLowerCase()),
+);
+
+/** Internal import tags that must never appear as public "certifications". */
+const INTERNAL_TAG_NAMES = new Set(
+  ["1688-import", "amazon-import"].map((n) => n.toLowerCase()),
+);
+
+/** Filter out internal sourcing props for public display. */
+export function publicProps(props: ProductProp[]): ProductProp[] {
+  return props.filter(
+    (p) => !INTERNAL_PROP_NAMES.has(p.name.trim().toLowerCase()),
+  );
+}
+
+/** Filter out internal import tags for public display. */
+export function publicTags(tags: ProductTag[]): ProductTag[] {
+  return tags.filter(
+    (t) => !INTERNAL_TAG_NAMES.has(t.name.trim().toLowerCase()),
+  );
 }
 
 // ─── Data-fetching helpers ───

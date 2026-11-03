@@ -28,11 +28,10 @@ export default async function AquariumPage({
   const currentPage = Number.isInteger(requestedPage) && requestedPage > 0
     ? requestedPage
     : 1;
-  // Aquarium subcategories sit under the Fish & Aquariums branch.
   const categoryTree = await fetchCategoryTree().catch(() => [] as CategoryTree[]);
-  const aquariumBranch = categoryTree.find((category) => category.slug === "fish-aquariums");
+  const aquariumBranch = categoryTree.find((category) => category.slug === "aquarium");
   const subcategories: CategoryTree[] = aquariumBranch?.children ?? [];
-  const aquarium = subcategories.find((category) => category.slug === "aquarium")
+  const aquarium = aquariumBranch
     ?? await fetchCategoryBySlug("aquarium").catch(() => null);
   const selectedCategory = subcategories.find((category) => category.slug === categorySlug)
     ?? aquarium;
@@ -85,6 +84,7 @@ export default async function AquariumPage({
               defaultValue={selectedCategory?.slug ?? "aquarium"}
               aria-label="Aquarium category"
             >
+              <option value="aquarium">All Aquarium Products</option>
               {subcategories.map((sc) => (
                 <option key={sc.id} value={sc.slug}>
                   {sc.name}
@@ -102,7 +102,7 @@ export default async function AquariumPage({
             <option>Newest First</option>
           </select>
           <span className="ml-auto text-[13px] text-neutral-400">
-            {totalProducts} products
+            {totalProducts} {totalProducts === 1 ? "product" : "products"}
           </span>
         </div>
       </div>

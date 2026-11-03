@@ -6,25 +6,30 @@ import type { ProductListItem } from "@/lib/api";
 
 const filters = [
   { id: "all", label: "All Products" },
-  { id: "aquarium", label: "Aquariums" },
+  { id: "aquarium-tanks", label: "Aquariums" },
   { id: "aquarium-filters", label: "Filters" },
   { id: "aquarium-decor", label: "Decor" },
+  { id: "pet-products", label: "Pet Products" },
 ] as const;
 
 type FilterId = (typeof filters)[number]["id"];
 
 export default function HomeProductCatalog({
   products,
+  petProducts,
 }: {
   products: ProductListItem[];
+  petProducts: ProductListItem[];
 }) {
   const [activeFilter, setActiveFilter] = useState<FilterId>("all");
   const visibleProducts =
     activeFilter === "all"
       ? products
-      : products.filter((product) =>
-          product.categories.some((category) => category.slug === activeFilter),
-        );
+      : activeFilter === "pet-products"
+        ? petProducts
+        : products.filter((product) =>
+            product.categories.some((category) => category.slug === activeFilter),
+          );
 
   return (
     <>

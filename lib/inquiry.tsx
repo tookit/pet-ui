@@ -21,7 +21,9 @@ export interface InquiryItem {
 
 interface InquiryContextType {
   items: InquiryItem[];
-  addItem: (item: Omit<InquiryItem, "addedAt" | "quantity">) => void;
+  addItem: (item: Omit<InquiryItem, "addedAt" | "quantity"> & {
+    quantity?: number;
+  }) => void;
   removeItem: (slug: string) => void;
   updateQuantity: (slug: string, qty: number) => void;
   clearAll: () => void;
@@ -87,12 +89,18 @@ export function InquiryProvider({ children }: { children: ReactNode }) {
   }, [items, hydrated]);
 
   const addItem = useCallback(
-    (item: Omit<InquiryItem, "addedAt" | "quantity">) => {
+    (item: Omit<InquiryItem, "addedAt" | "quantity"> & {
+      quantity?: number;
+    }) => {
       setItems((prev) => {
         if (prev.some((i) => i.slug === item.slug)) return prev;
         return [
           ...prev,
-          { ...item, quantity: item.moq ?? 1, addedAt: Date.now() },
+          {
+            ...item,
+            quantity: item.quantity ?? item.moq ?? 1,
+            addedAt: Date.now(),
+          },
         ];
       });
     },

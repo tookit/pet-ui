@@ -18,7 +18,7 @@ const categories = [
     name: "Aquariums",
     description: "Tanks and aquatic habitats",
     image: "/images/categories/aquariums.png",
-    href: "/aquarium?category=aquarium",
+    href: "/aquarium?category=aquarium-tanks",
   },
   {
     name: "Aquarium Filters",
@@ -47,11 +47,25 @@ const categories = [
 ] as const;
 
 const catalogCategories = [
-  "aquarium",
+  "aquarium-tanks",
   "aquarium-filters",
   "aquarium-decor",
+  "dog-toys",
+  "pet-beds",
+  "cat-furniture",
+  "litter-boxes",
   "aquarium-lighting",
 ];
+
+const aquariumSlugs = new Set([
+  "aquarium-tanks",
+  "aquarium-filters",
+  "aquarium-lighting",
+  "aquarium-plants",
+  "aquarium-decor",
+  "aquarium-cleaning",
+  "aquarium-feeders",
+]);
 
 function selectBalancedProducts(
   products: ProductListItem[],
@@ -227,7 +241,13 @@ function Showcase({ products }: { products: ProductListItem[] }) {
   );
 }
 
-function Catalog({ products }: { products: ProductListItem[] }) {
+function Catalog({
+  products,
+  petProducts,
+}: {
+  products: ProductListItem[];
+  petProducts: ProductListItem[];
+}) {
   return (
     <section id="products" className="py-12 md:py-14 scroll-mt-16">
       <div className="container-page">
@@ -237,7 +257,7 @@ function Catalog({ products }: { products: ProductListItem[] }) {
           description="Find products for your next order and add them to one inquiry."
           className="!mb-0"
         />
-        {products.length > 0 && <HomeProductCatalog products={products} />}
+        {products.length > 0 && <HomeProductCatalog products={products} petProducts={petProducts} />}
         {products.length === 0 && (
           <div className="mt-8 bg-neutral-50 border border-neutral-100 rounded-md px-6 py-12 text-center">
             <p className="font-medium text-neutral-800">Products are temporarily unavailable.</p>
@@ -309,6 +329,9 @@ export default async function HomePage() {
   const products = [...(firstPage?.result ?? []), ...(secondPage?.result ?? [])];
   const showcase = selectBalancedProducts(products, 6);
   const catalog = selectBalancedProducts(products, 12, new Set(showcase.map((product) => product.id)));
+  const petProducts = products.filter((product) =>
+    product.categories.some((category) => !aquariumSlugs.has(category.slug)),
+  );
 
   return (
     <>
@@ -316,7 +339,7 @@ export default async function HomePage() {
       <TrustBar />
       <Categories />
       <Showcase products={showcase} />
-      <Catalog products={catalog} />
+      <Catalog products={catalog} petProducts={petProducts} />
       <ValueStrip />
       <CallToAction />
     </>

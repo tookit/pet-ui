@@ -46,6 +46,6 @@ Design tokens (colors, typography, spacing, shadows) are defined in `../html/DES
 
 ## API Connection
 
-The storefront connects to [pet-api](../pet-api/) (FastAPI backend on port 8001) using the `X-API-Key` header for unauthenticated reads (products, categories, tags). Authenticated user actions (quotes, account) use JWT.
+The storefront connects to [pet-api](../pet-api/) (FastAPI backend; 8001 via `run_server.sh`, 8002 via `run_server.bat`) using the `X-API-Key` header for unauthenticated reads (products, categories, tags). Authenticated user actions (quotes, account) use JWT. This workspace's `.env.local` points at **8002**.
 
 See `lib/api.ts` for the fetch client.

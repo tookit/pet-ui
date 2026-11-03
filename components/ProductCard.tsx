@@ -11,6 +11,7 @@ import {
   Eye,
 } from "@phosphor-icons/react";
 import type { ProductListItem, ProductDetail } from "@/lib/api";
+import { publicProps } from "@/lib/api";
 import { useInquiry } from "@/lib/inquiry";
 
 /* ─── Quick‑View Modal ─── */
@@ -197,10 +198,12 @@ function QuickViewModal({
                 </p>
               )}
 
-              {/* Specs summary */}
-              {detail.props.length > 0 && (
+              {/* Specs summary (internal sourcing props filtered out) */}
+              {publicProps(detail.props).length > 0 && (
                 <div className="flex flex-wrap gap-2">
-                  {detail.props.slice(0, 4).map((prop, i) => (
+                  {publicProps(detail.props)
+                    .slice(0, 4)
+                    .map((prop, i) => (
                     <span
                       key={prop.id || i}
                       className="inline-flex text-xs bg-neutral-100 text-neutral-600 px-2 py-1 rounded-sm"
