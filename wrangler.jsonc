@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "pet-ui",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    // Build-time inlined by Next — the value here only matters if you also set it
+    // in the build environment (Cloudflare build vars / .env.production). No trailing slash.
+    "NEXT_PUBLIC_API_URL": "https://api.petpallets.com",
+    // No middleware in this app; skips Next's runtime require() of
+    // .next/server/middleware-manifest.json, which workerd cannot do.
+    "NEXT_PRIVATE_MINIMAL_MODE": "1"
+  },
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  }
+}
