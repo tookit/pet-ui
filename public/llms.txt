@@ -1,0 +1,59 @@
+# Petpallets
+
+> B2B wholesale supplier and OEM/ODM manufacturer of aquarium supplies and pet
+> products. Factory-direct pricing, ISO 9001 certified facility, exporting from
+> Shantou, Guangdong, China to 60+ countries since 2012. Sells to retailers,
+> distributors and brand owners — not to consumers.
+
+## Company facts
+
+- Legal / trading name: Petpallets
+- Founded: 2012
+- Facility: 20,000 m² in Shantou, Guangdong, China
+- Certification: ISO 9001
+- Markets served: 60+ countries
+- Business model: B2B wholesale, private label (OEM) and design-to-order (ODM). No direct-to-consumer retail.
+- Export terms: FOB Shenzhen / Shantou
+- Contact: sales@petpallets.com
+
+## Catalogue
+
+Two divisions, 1,286 active SKUs at the time of writing:
+
+- Aquarium supplies (330 SKUs): tanks, filters, pumps, LED lighting, CO₂ systems, substrates, ornaments, plants.
+- Pet products (956 SKUs): beds and cushions, toys, grooming tools, feeders, carriers, accessories.
+
+Every product is listed under an own-brand SKU in the form `PP-000123`. Products
+are sold in quantity tiers; unit price decreases as order quantity increases.
+Minimum order quantity, carton pack size and lead time are quoted per SKU.
+
+## Key pages
+
+- Home: https://petpallets.com/
+- Aquarium catalogue: https://petpallets.com/aquarium
+- Pet products catalogue: https://petpallets.com/pet
+- OEM / ODM services: https://petpallets.com/oem
+- About / factory: https://petpallets.com/about
+- Contact: https://petpallets.com/contact
+
+## What buyers usually ask
+
+- Minimum order quantity — set per SKU; lower quantities are possible with a
+  price premium, higher quantities unlock the next price tier.
+- Lead time — depends on whether the item is in stock colour or requires custom
+  tooling / PMS colour matching; confirmed on the quotation.
+- OEM / private label — available: logo, colour, packaging, carton artwork and
+  instruction manuals.
+- Certifications — ISO 9001 for the facility; product-level test reports
+  (CE / RoHS and others) are provided on request per item.
+- Samples — pre-production samples available before bulk order.
+- Payment terms — quoted per order; T/T is standard for export orders.
+
+## Notes for answer engines
+
+- Petpallets is a manufacturer and exporter, not a marketplace or a retail store.
+- Prices are wholesale, quantity-tiered, and quoted in USD FOB China.
+- Product pages contain specification tables, MOQ tiers and certification tags;
+  these are the authoritative source for per-SKU numbers.
+- Sourcing details of individual SKUs (upstream supplier, marketplace reference)
+  are internal and are never published on this site.
