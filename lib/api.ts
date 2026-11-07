@@ -282,6 +282,17 @@ export async function fetchProductsByCategory(
   );
 }
 
+/** Search active products by name or SKU. */
+export async function fetchProductsBySearch(
+  query: string,
+  page = 1,
+  perPage = 24,
+): Promise<PaginatedResponse<ProductListItem>> {
+  return apiFetch<PaginatedResponse<ProductListItem>>(
+    `/products?search=${encodeURIComponent(query)}&status=active&page=${page}&per_page=${perPage}&sort_by=created_at&sort_order=desc`,
+  );
+}
+
 /** Fetch a product by slug with full detail. Returns null on 404. */
 export async function fetchProductBySlug(
   slug: string,

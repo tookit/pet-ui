@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { List, X, ClipboardText } from "@phosphor-icons/react";
+import { List, X, ClipboardText, MagnifyingGlass } from "@phosphor-icons/react";
 import Logo from "./Logo";
+import NavSearch from "./NavSearch";
 import Button from "./Button";
 import { useInquiry } from "@/lib/inquiry";
 
@@ -62,6 +63,7 @@ export default function Nav() {
 
           {/* Desktop actions */}
           <div className="hidden md:flex items-center gap-3 ml-8">
+            <NavSearch />
             <button
               className="relative inline-flex items-center gap-1.5 h-8 px-3 text-sm font-medium bg-transparent text-primary-600 border border-primary-300 rounded-md cursor-pointer hover:bg-primary-50 transition-[background,color,border-color,box-shadow] duration-fast"
               onClick={openDrawer}
@@ -136,6 +138,14 @@ export default function Nav() {
           </ul>
 
           <div className="border-t border-neutral-100 p-4 flex flex-col gap-2">
+            <a
+              href="/search"
+              className="inline-flex items-center justify-center gap-1.5 h-10 px-4 text-sm font-medium text-neutral-700 border border-neutral-200 rounded-md no-underline hover:bg-neutral-50 hover:text-primary-600 transition-colors"
+              onClick={closeMobile}
+            >
+              <MagnifyingGlass size={18} weight="regular" />
+              Search Products
+            </a>
             <button
               className="relative inline-flex items-center justify-center gap-1.5 h-10 px-4 text-sm font-medium bg-transparent text-primary-600 border border-primary-300 rounded-md cursor-pointer hover:bg-primary-50 transition-[background,color,border-color,box-shadow] duration-fast"
               onClick={() => {
